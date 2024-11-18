@@ -1,0 +1,20 @@
+{
+  "name": "microservices-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start-all": "concurrently \"npm run start-auth\" \"npm run start-blog\" \"npm run start-api-gateway\" \"npm run start-email\"",
+    "start-api-gateway": "cd api-gateway && npm run start:dev",
+    "start-auth": "cd auth && npm run start:dev",
+    "start-blog": "cd blog && npm run start:dev",
+    "start-email": "cd email && npm run start:dev",
+    "install-all": "for dir in auth blog api-gateway email; do (cd $dir && npm install); done"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

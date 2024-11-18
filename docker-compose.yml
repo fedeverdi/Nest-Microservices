@@ -1,0 +1,74 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:6.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - microservices
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - microservices
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - redis
+      - mongodb
+    ports:
+      - "3000:3000"
+    networks:
+      - microservices
+
+  auth-service:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth-service
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - microservices
+
+  email-service:
+    build:
+      context: ./email
+      dockerfile: Dockerfile
+    container_name: email-service
+    depends_on:
+      - redis
+    networks:
+      - microservices
+
+  blog-service:
+    build:
+      context: ./blog
+      dockerfile: Dockerfile
+    container_name: blog-service
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - microservices
+
+networks:
+  microservices:
+    driver: bridge
+
+volumes:
+  mongo-data:

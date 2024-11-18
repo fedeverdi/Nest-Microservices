@@ -1,0 +1,38 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_ENDPOINT}
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=14.2_$COMMIT_HASH
+      - SERVICES=("auth" "blog" "email" "api-gateway")
+      - for SERVICE in "${SERVICES[@]}"; do
+          IMAGE_URIS["$SERVICE"]="${REPOSITORY_URI}-$SERVICE:${IMAGE_TAG}";
+          LATEST_IMAGE_URIS["$SERVICE"]="${REPOSITORY_URI}-$SERVICE:latest";
+        done
+  build:
+    commands:
+      - for SERVICE in "${SERVICES[@]}"; do
+          aws s3 cp s3://${ENV_BUCKET}/$SERVICE-service $SERVICE/.env || echo "No .env for $SERVICE";
+          docker build -t "${IMAGE_URIS[$SERVICE]}" -f $SERVICE/Dockerfile .;
+          docker tag "${IMAGE_URIS[$SERVICE]}" "${LATEST_IMAGE_URIS[$SERVICE]}";
+        done
+  post_build:
+    commands:
+      - for SERVICE in "${SERVICES[@]}"; do
+          docker push "${IMAGE_URIS[$SERVICE]}";
+          docker push "${LATEST_IMAGE_URIS[$SERVICE]}";
+        done
+      - printf '[{"name":"%s","imageUri":"%s"}]' "api-gateway" "${IMAGE_URIS['api-gateway']}" > images_api_gateway.json
+      - JSON_OUTPUT="["
+      - for SERVICE in "${SERVICES[@]}"; do
+          if [[ "$SERVICE" != "api-gateway" ]]; then
+            JSON_OUTPUT+="{\"name\":\"$SERVICE-service\",\"imageUri\":\"${IMAGE_URIS[$SERVICE]}\"},";
+          fi
+        done
+      - JSON_OUTPUT=${JSON_OUTPUT%,}"]"
+      - echo $JSON_OUTPUT > images_services.json
+artifacts:
+  files:
+    - images_api_gateway.json
+    - images_services.json

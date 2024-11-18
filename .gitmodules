@@ -1,0 +1,12 @@
+[submodule "auth"]
+	path = auth
+	url = https://github.com/fedeverdi/Auth-Nest-Microservice.git
+[submodule "blog"]
+	path = blog
+	url = https://github.com/fedeverdi/Blog-Nest-Microservice.git
+[submodule "email"]
+	path = email
+	url = https://github.com/fedeverdi/Email-Nest-Microservice.git
+[submodule "api-gateway"]
+	path = api-gateway
+	url = https://github.com/fedeverdi/Api-Gateway-Nest.git
