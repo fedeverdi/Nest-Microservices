@@ -10,7 +10,12 @@
     "start-auth": "cd auth && npm run start:dev",
     "start-blog": "cd blog && npm run start:dev",
     "start-email": "cd email && npm run start:dev",
-    "install-all": "for dir in auth blog api-gateway email; do (cd $dir && npm install); done"
+    "install-all": "for dir in auth blog api-gateway email; do (cd $dir && npm install); done",
+    "test-auth": "cd auth && npm test",
+    "test-blog": "cd blog && npm test",
+    "test-api-gateway": "cd api-gateway && npm test",
+    "test-email": "cd email && npm test",
+    "test-all": "concurrently \"npm run test-auth\" \"npm run test-blog\" \"npm run test-api-gateway\" \"npm run test-email\""
   },
   "author": "",
   "license": "ISC",
